@@ -34,7 +34,12 @@ const SQUAD = [
     gates: ["ANTIFRAUDE", "KYC/PLD"],
     ability: "Bloqueio de Fraude",
     accessory: "shield",
-    audio: { notes: [740, 988], waveform: "triangle", spacing: 0.075, duration: 0.12 },
+    audio: {
+      notes: [740, 988],
+      waveform: "triangle",
+      spacing: 0.075,
+      duration: 0.12,
+    },
   },
   {
     name: "Dados",
@@ -43,7 +48,12 @@ const SQUAD = [
     gates: ["SCORE", "RENDA"],
     ability: "Open Finance",
     accessory: "chart",
-    audio: { notes: [523, 659, 784], waveform: "sine", spacing: 0.065, duration: 0.15 },
+    audio: {
+      notes: [523, 659, 784],
+      waveform: "sine",
+      spacing: 0.065,
+      duration: 0.15,
+    },
   },
   {
     name: "IA / Decisão",
@@ -52,7 +62,12 @@ const SQUAD = [
     gates: ["POLÍTICA", "LIMITE"],
     ability: "Motor de Decisão",
     accessory: "chip",
-    audio: { notes: [392, 587, 880], waveform: "square", spacing: 0.055, duration: 0.095 },
+    audio: {
+      notes: [392, 587, 880],
+      waveform: "square",
+      spacing: 0.055,
+      duration: 0.095,
+    },
   },
   {
     name: "FinOps / Plataforma",
@@ -61,7 +76,12 @@ const SQUAD = [
     gates: [],
     ability: "Otimização",
     accessory: "coin",
-    audio: { notes: [392, 523, 784], waveform: "sawtooth", spacing: 0.09, duration: 0.13 },
+    audio: {
+      notes: [392, 523, 784],
+      waveform: "sawtooth",
+      spacing: 0.09,
+      duration: 0.13,
+    },
   },
 ];
 const canvas = document.querySelector("#game");
@@ -237,7 +257,8 @@ function playGameCue(cue, stage = 0) {
       const startAt = now + index * spacing;
       const oscillator = gameAudioContext.createOscillator();
       const envelope = gameAudioContext.createGain();
-      oscillator.type = squadAudio?.waveform ?? (cue === "denied" ? "triangle" : "sine");
+      oscillator.type =
+        squadAudio?.waveform ?? (cue === "denied" ? "triangle" : "sine");
       oscillator.frequency.setValueAtTime(frequency, startAt);
       envelope.gain.setValueAtTime(0.0001, startAt);
       envelope.gain.exponentialRampToValueAtTime(0.22, startAt + 0.018);
