@@ -108,6 +108,7 @@ let businessToastUntil = 0;
 let businessToastColor = THEME.awsOrange;
 let demoMode = false;
 let demoCompleted = false;
+let demoFinishAt = 0;
 
 function createEmptyBusinessStats() {
   return {
@@ -221,6 +222,7 @@ function resetGame() {
   businessToast = "";
   businessToastUntil = 0;
   demoCompleted = false;
+  demoFinishAt = 0;
   pipes = [
     createPipe(CANVAS_WIDTH + 55, 270),
     createPipe(CANVAS_WIDTH + 55 + PIPE_DISTANCE, 405),
@@ -1197,6 +1199,17 @@ function drawSquadIntro() {
 
 function drawHud() {
   const kpis = getCurrentKPIs();
+  const currentPipe = getCurrentPipe();
+  const proposal = currentPipe?.proposal ?? activeProposal;
+  const totalStages = demoMode
+    ? DEMO_GATES.length
+    : CREDIT_RULES.GATE_DEFINITIONS.length;
+  const currentStage = currentPipe
+    ? currentPipe.stageIndex + 1
+    : businessStats.stageReached;
+  const stageLabel =
+    currentPipe?.label ??
+    (currentStage >= totalStages ? "LIMITE" : "EM ANÁLISE");
   ctx.fillStyle = "rgba(35, 47, 62, 0.85)";
   ctx.fillRect(0, 0, CANVAS_WIDTH, 70);
   ctx.fillStyle = THEME.orange;
@@ -1211,17 +1224,40 @@ function drawHud() {
   ctx.fillText("VOLUME LIBERADO", CANVAS_WIDTH / 2, 19);
   ctx.textAlign = "right";
   ctx.fillText("APROVAÇÃO", CANVAS_WIDTH - 18, 19);
-  ctx.font = "bold 18px Georgia, serif";
+  ctx.font = "bold 16px Georgia, serif";
   ctx.fillStyle = THEME.awsOrange;
   ctx.textAlign = "left";
-  ctx.fillText(formatNumber(kpis.approved), 18, 46);
+  ctx.fillText(formatNumber(kpis.approved), 18, 40);
   ctx.textAlign = "center";
-  ctx.fillText(formatCurrency(kpis.releasedVolume), CANVAS_WIDTH / 2, 46);
+  ctx.fillText(formatCurrency(kpis.releasedVolume), CANVAS_WIDTH / 2, 40);
   ctx.textAlign = "right";
   ctx.fillText(
     `${formatNumber(kpis.approvalRate * 100, 1)}%`,
     CANVAS_WIDTH - 18,
-    46,
+    40,
+  );
+
+  ctx.font = "bold 7px Trebuchet MS, sans-serif";
+  ctx.fillStyle = THEME.white;
+  ctx.textAlign = "left";
+  ctx.fillText(
+    `${formatNumber(Math.max(0, kpis.proposalsStarted - kpis.approved))} EM ANÁLISE`,
+    18,
+    58,
+  );
+  ctx.textAlign = "center";
+  ctx.fillText(
+    proposal
+      ? `PEDIDO ${formatCurrency(proposal.requestedAmount)}`
+      : "VOLUME CONFIRMADO",
+    CANVAS_WIDTH / 2,
+    58,
+  );
+  ctx.textAlign = "right";
+  ctx.fillText(
+    `${formatNumber(Math.min(currentStage, totalStages))}/${totalStages} · ${stageLabel}`,
+    CANVAS_WIDTH - 18,
+    58,
   );
 }
 
@@ -1306,6 +1342,10 @@ function handleCanvasInput(event) {
 function update(delta) {
   if (state !== "playing") return;
   const now = performance.now();
+  if (demoFinishAt > 0) {
+    if (now >= demoFinishAt) finishSquadDemo();
+    return;
+  }
   let demoTargetPipe = null;
   if (demoMode) {
     demoTargetPipe =
@@ -1378,7 +1418,7 @@ function update(delta) {
       processGate(pipe, now);
       if (state !== "playing") return;
       if (demoMode && pipe.stageIndex === DEMO_GATES.length - 1) {
-        finishSquadDemo();
+        demoFinishAt = now + 3000;
         return;
       }
     }
@@ -1421,6 +1461,7 @@ function draw() {
   if (state === "over") {
     ctx.fillStyle = THEME.ink;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    drawHud();
     drawOverlay();
     return;
   }
