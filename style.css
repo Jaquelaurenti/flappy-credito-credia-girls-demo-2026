@@ -1,0 +1,158 @@
+:root {
+  color-scheme: dark;
+  font-family: "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
+  background: #232f3e;
+  color: #ffffff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 280px;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  padding: 22px 16px;
+  background: linear-gradient(180deg, #232f3e 0%, #003a70 100%);
+}
+
+.game-shell {
+  display: flex;
+  width: min(100%, 480px);
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: arrive 500ms ease-out both;
+}
+
+.game-heading {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.eyebrow,
+.credit {
+  color: #8a99a8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  font-weight: 700;
+}
+
+h1 span {
+  color: #ff9900;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 6px solid transparent;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, #232f3e, #003a70) padding-box,
+    linear-gradient(135deg, #ec7000, #ff9900) border-box;
+  box-shadow:
+    0 18px 54px #050b0f80,
+    0 0 19px #ff990044;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  min-height: 27px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 0;
+  color: #ffffff;
+  font-size: 12px;
+}
+
+kbd {
+  min-width: 31px;
+  padding: 5px 7px;
+  border: 1px solid #8a99a8;
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: #232f3e;
+  color: #ff9900;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.credit {
+  margin: -6px 0 0;
+  color: #8a99a8;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-height: 820px) {
+  body {
+    padding-block: 12px;
+  }
+  .game-shell {
+    gap: 9px;
+  }
+  .game-heading {
+    min-height: 25px;
+  }
+  canvas {
+    max-height: calc(100svh - 116px);
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
