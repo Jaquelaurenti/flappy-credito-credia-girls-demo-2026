@@ -70,6 +70,8 @@ const jumpSound = new Audio("assets/jump.wav");
 const gameOverSound = new Audio("assets/game_over.wav");
 jumpSound.preload = "auto";
 gameOverSound.preload = "auto";
+let gameAudioContext = null;
+let gameAudioMaster = null;
 
 const bestStored = Number.parseInt(
   localStorage.getItem(BEST_SCORE_KEY) || "0",
@@ -197,6 +199,54 @@ function playSound(sound) {
   if (playback) playback.catch(() => {});
 }
 
+function playGameCue(cue, stage = 0) {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+
+  try {
+    if (!gameAudioContext) {
+      gameAudioContext = new AudioContextClass();
+      gameAudioMaster = gameAudioContext.createGain();
+      gameAudioMaster.gain.value = 0.32;
+      gameAudioMaster.connect(gameAudioContext.destination);
+    }
+      if (gameAudioContext.state === "suspended") {
+        gameAudioContext.resume().catch(() => {});
+      }
+
+    const now = gameAudioContext.currentTime;
+    const melodies = {
+      start: [440, 554.37, 659.25],
+      gate: [523.25 + stage * 32],
+      fraudAvoided: [783.99, 1046.5],
+      approved: [523.25, 659.25, 783.99, 1046.5],
+      complete: [1046.5, 783.99],
+      denied: [392, 329.63, 261.63],
+    };
+    const notes = melodies[cue];
+    if (!notes) return;
+
+    const spacing = cue === "gate" ? 0 : 0.095;
+    const duration = cue === "gate" ? 0.16 : 0.22;
+    notes.forEach((frequency, index) => {
+      const startAt = now + index * spacing;
+      const oscillator = gameAudioContext.createOscillator();
+      const envelope = gameAudioContext.createGain();
+      oscillator.type = cue === "denied" ? "triangle" : "sine";
+      oscillator.frequency.setValueAtTime(frequency, startAt);
+      envelope.gain.setValueAtTime(0.0001, startAt);
+      envelope.gain.exponentialRampToValueAtTime(0.22, startAt + 0.018);
+      envelope.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+      oscillator.connect(envelope);
+      envelope.connect(gameAudioMaster);
+      oscillator.start(startAt);
+      oscillator.stop(startAt + duration + 0.02);
+    });
+  } catch {
+    // Audio is optional; gameplay remains available if the browser blocks it.
+  }
+}
+
 function resetGame() {
   score = 0;
   frame = 0;
@@ -301,6 +351,7 @@ function handleInput(event) {
     resetGame();
     state = "playing";
     statusText.textContent = "Jogo iniciado.";
+    playGameCue("start");
   }
 
   if (state === "playing") flap();
@@ -347,6 +398,7 @@ function startNewProposal() {
   demoMode = false;
   state = "playing";
   statusText.textContent = "Nova proposta iniciada.";
+  playGameCue("start");
   flap();
 }
 
@@ -359,6 +411,7 @@ function startSquadDemo() {
   ghostY = startingPipe.gapY;
   ghostVelocity = 0;
   statusText.textContent = "Demonstração do Squad iniciada.";
+  playGameCue("start");
 }
 
 function finishSquadDemo() {
@@ -423,6 +476,7 @@ function finishWithReport(pipe, reason) {
   };
   state = "over";
   playSound(gameOverSound);
+  playGameCue("denied");
   if (score > bestScore) {
     bestScore = score;
     localStorage.setItem(BEST_SCORE_KEY, String(bestScore));
@@ -461,6 +515,7 @@ function processGate(pipe, now) {
     finishWithReport(pipe, assessment.reason);
     return;
   }
+  playGameCue("gate", pipe.stageIndex);
 
   if (pipe.riskSuspected) {
     const fraudEvaluation = CREDIT_RULES.avaliarFraude(
@@ -471,6 +526,7 @@ function processGate(pipe, now) {
     if (fraudEvaluation.avoided) {
       businessStats.fraudsAvoided += 1;
       showBusinessToast("Fraude evitada!", SQUAD[0].color, 2200);
+      playGameCue("fraudAvoided");
     } else {
       const exposure = fraudEvaluation.lossAmount;
       businessStats.fraudApprovals += 1;
@@ -509,6 +565,7 @@ function processGate(pipe, now) {
     }
     doubleVolumeArmed = false;
     closeProposal(pipe.proposal, now);
+    playGameCue("approved");
   }
 }
 
