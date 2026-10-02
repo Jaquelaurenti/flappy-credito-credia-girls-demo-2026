@@ -1,0 +1,59 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Publicar Flappy Crédito no GitHub Pages",
+			"type": "shell",
+			"command": "git init --initial-branch=main && git add index.html style.css game.js business.js && git -c user.name=\"Jaquelaurenti\" -c user.email=\"jaquelaurenti@users.noreply.github.com\" commit -m \"Publish Flappy Credito demo\" && gh repo create flappy-credito-credia-girls-demo-2026 --public --source=. --remote=origin --push && gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages -X POST -F 'source[branch]=main' -F 'source[path]=/' --jq '.html_url'",
+			"problemMatcher": []
+		},
+		{
+			"label": "Diagnosticar GitHub Pages",
+			"type": "shell",
+			"command": "gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages --jq '{status, html_url, build_type, source}' && gh run list --repo Jaquelaurenti/flappy-credito-credia-girls-demo-2026 --limit 5 --json name,status,conclusion,url",
+			"problemMatcher": []
+		},
+		{
+			"label": "Verificar status atual do Pages",
+			"type": "shell",
+			"command": "gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages --jq '[.status, .html_url, .source.branch, .source.path] | @tsv'",
+			"problemMatcher": []
+		},
+		{
+			"label": "Consultar deploy Pages",
+			"type": "shell",
+			"command": "gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages --jq '[.status, .html_url] | @tsv' && gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/deployments --jq '.[0].id'",
+			"problemMatcher": []
+		},
+		{
+			"label": "Verificar Pages atualizado",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages --jq '[.status, .html_url] | @tsv'",
+			"problemMatcher": []
+		},
+		{
+			"label": "Confirmar build do Pages",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages --jq '[.status, .html_url] | @tsv'",
+			"problemMatcher": []
+		},
+		{
+			"label": "Consultar Pages e último commit remoto",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages --jq '.status' && GH_PAGER=cat gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/commits/main --jq '.sha'",
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspecionar deploy ativo Pages",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/deployments --jq '.[0] | [.id, .ref, .environment, .created_at] | @tsv' && GH_PAGER=cat gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages --jq '[.status, .source.branch, .source.path] | @tsv'",
+			"problemMatcher": []
+		},
+		{
+			"label": "Acompanhar build final do Pages",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh api repos/Jaquelaurenti/flappy-credito-credia-girls-demo-2026/pages --jq '[.status, .html_url] | @tsv'",
+			"problemMatcher": []
+		}
+	]
+}

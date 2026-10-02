@@ -34,6 +34,7 @@ const SQUAD = [
     gates: ["ANTIFRAUDE", "KYC/PLD"],
     ability: "Bloqueio de Fraude",
     accessory: "shield",
+    audio: { notes: [740, 988], waveform: "triangle", spacing: 0.075, duration: 0.12 },
   },
   {
     name: "Dados",
@@ -42,6 +43,7 @@ const SQUAD = [
     gates: ["SCORE", "RENDA"],
     ability: "Open Finance",
     accessory: "chart",
+    audio: { notes: [523, 659, 784], waveform: "sine", spacing: 0.065, duration: 0.15 },
   },
   {
     name: "IA / Decisão",
@@ -50,6 +52,7 @@ const SQUAD = [
     gates: ["POLÍTICA", "LIMITE"],
     ability: "Motor de Decisão",
     accessory: "chip",
+    audio: { notes: [392, 587, 880], waveform: "square", spacing: 0.055, duration: 0.095 },
   },
   {
     name: "FinOps / Plataforma",
@@ -58,6 +61,7 @@ const SQUAD = [
     gates: [],
     ability: "Otimização",
     accessory: "coin",
+    audio: { notes: [392, 523, 784], waveform: "sawtooth", spacing: 0.09, duration: 0.13 },
   },
 ];
 const canvas = document.querySelector("#game");
@@ -210,9 +214,9 @@ function playGameCue(cue, stage = 0) {
       gameAudioMaster.gain.value = 0.32;
       gameAudioMaster.connect(gameAudioContext.destination);
     }
-      if (gameAudioContext.state === "suspended") {
-        gameAudioContext.resume().catch(() => {});
-      }
+    if (gameAudioContext.state === "suspended") {
+      gameAudioContext.resume().catch(() => {});
+    }
 
     const now = gameAudioContext.currentTime;
     const melodies = {
@@ -223,16 +227,17 @@ function playGameCue(cue, stage = 0) {
       complete: [1046.5, 783.99],
       denied: [392, 329.63, 261.63],
     };
-    const notes = melodies[cue];
+    const squadAudio = cue === "squad" ? SQUAD[stage]?.audio : null;
+    const notes = squadAudio?.notes ?? melodies[cue];
     if (!notes) return;
 
-    const spacing = cue === "gate" ? 0 : 0.095;
-    const duration = cue === "gate" ? 0.16 : 0.22;
+    const spacing = squadAudio?.spacing ?? (cue === "gate" ? 0 : 0.095);
+    const duration = squadAudio?.duration ?? (cue === "gate" ? 0.16 : 0.22);
     notes.forEach((frequency, index) => {
       const startAt = now + index * spacing;
       const oscillator = gameAudioContext.createOscillator();
       const envelope = gameAudioContext.createGain();
-      oscillator.type = cue === "denied" ? "triangle" : "sine";
+      oscillator.type = squadAudio?.waveform ?? (cue === "denied" ? "triangle" : "sine");
       oscillator.frequency.setValueAtTime(frequency, startAt);
       envelope.gain.setValueAtTime(0.0001, startAt);
       envelope.gain.exponentialRampToValueAtTime(0.22, startAt + 0.018);
@@ -286,11 +291,17 @@ function flap() {
 
 function switchSquad(index) {
   const now = performance.now();
-  if (index < 0 || index >= SQUAD.length || now - lastSquadSwitch < 1000)
+  if (
+    index < 0 ||
+    index >= SQUAD.length ||
+    index === activeSquadIndex ||
+    now - lastSquadSwitch < 1000
+  )
     return;
   activeSquadIndex = index;
   lastSquadSwitch = now;
   squadToastUntil = now + 1000;
+  playGameCue("squad", index);
 }
 
 function activateSquadAbility() {
@@ -1418,6 +1429,7 @@ function update(delta) {
       if (activeSquadIndex !== demoTargetPipe.demoSquadMember) {
         activeSquadIndex = demoTargetPipe.demoSquadMember;
         squadToastUntil = now + 1000;
+        playGameCue("squad", activeSquadIndex);
       }
     }
   }
