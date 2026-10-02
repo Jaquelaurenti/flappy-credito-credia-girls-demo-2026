@@ -574,6 +574,25 @@ function drawPipe(pipe) {
     PIPE_WIDTH - 10,
     groundY - bottomY - lip,
   );
+
+  ctx.save();
+  ctx.globalAlpha = pipe.riskSuspected ? 0.9 : 0.55;
+  ctx.shadowColor = gateAccent;
+  ctx.shadowBlur = pipe.riskSuspected ? 16 : 9;
+  ctx.strokeStyle = gateAccent;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(pipe.x + 6.5, -1, PIPE_WIDTH - 13, topHeight - lip + 2);
+  ctx.strokeRect(
+    pipe.x + 6.5,
+    bottomY + lip,
+    PIPE_WIDTH - 13,
+    groundY - bottomY - lip,
+  );
+  ctx.fillStyle = gateAccent;
+  ctx.fillRect(pipe.x, topHeight - lip, PIPE_WIDTH, lip);
+  ctx.fillRect(pipe.x, bottomY, PIPE_WIDTH, lip);
+  ctx.restore();
+
   ctx.strokeStyle = gateAccent;
   ctx.lineWidth = 3;
   ctx.strokeRect(pipe.x + 6.5, -1, PIPE_WIDTH - 13, topHeight - lip + 2);
